@@ -3,497 +3,613 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#090914">
-<title>Sohel Ahmad — Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sohel Vault — Private Document Locker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-:root{--bg:#090914;--glass:rgba(255,255,255,.055);--border:rgba(255,255,255,.11);--muted:#9293ae;--purple:#a78bfa;--pink:#f0abfc}
+:root {
+  --bg:#090b11; --panel:#111520; --line:#252b3a;
+  --text:#f3f5fb; --muted:#9299ad; --accent:#9d8cff;
+  --accent2:#65d7d0; --danger:#ff7185;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#f6f5ff;font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 15% 0%,#552c883c,transparent 40%),radial-gradient(ellipse at 90% 25%,#4338ca2b,transparent 35%),radial-gradient(ellipse at 50% 100%,#7c3aed16,transparent 40%);z-index:-1}
+body{margin:0;background:radial-gradient(ellipse at top,#1b1b36 0%,#090b11 55%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
 button,input,select{font:inherit}
-button{cursor:pointer;transition:.2s}
-button:hover{transform:translateY(-2px);filter:brightness(1.12)}
-button:disabled{opacity:.5;cursor:wait}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
 .hidden{display:none!important}
-.shell{width:min(1200px,93%);margin:auto;padding:28px 0 55px}
-.glass{background:var(--glass);border:1px solid var(--border);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-radius:22px;box-shadow:0 12px 40px #0002}
-.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;position:sticky;top:12px;z-index:3}
-.identity{display:flex;align-items:center;gap:13px}
-.avatar{width:47px;height:47px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#c4b5fd,#8b5cf6 55%,#ec4899);color:#fff;font-weight:800;font-size:19px;box-shadow:0 0 28px #8b5cf655}
-.name{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;letter-spacing:.5px}
-.sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:1.5px}
-.btn{border:1px solid transparent;border-radius:12px;padding:11px 15px;background:linear-gradient(110deg,#a78bfa,#c084fc);color:#150d29;font-weight:700}
-.btn.ghost{background:rgba(255,255,255,.06);color:#eeeaff;border-color:var(--border)}
-.btn.red{background:#ff5c851b;color:#ff9db6;border-color:#ff5c8533}
-.btn.small{padding:8px 10px;font-size:12px}
-.hero{padding:55px 5px 35px}
-.eyebrow{color:#c4b5fd;font-size:11px;letter-spacing:3px;font-weight:700}
-h1,h2,h3,p{margin-top:0}
-h1{font:600 clamp(36px,6vw,62px)/1.08 'Space Grotesk',sans-serif;letter-spacing:-2px;margin:16px 0}
-.gradient{background:linear-gradient(100deg,#fff 10%,#c4b5fd 53%,#f0abfc);background-clip:text;-webkit-background-clip:text;color:transparent}
-.hero p{color:var(--muted);max-width:500px;line-height:1.8}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:23px}
-.stat{padding:22px}
-.stat-label{font-size:12px;color:var(--muted)}
-.stat-num{font:600 31px 'Space Grotesk',sans-serif;margin:8px 0 3px}
-.stat-icon{font-size:20px;margin-bottom:12px}
-.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:start}
-.sidebar{padding:20px;position:sticky;top:100px}
-.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);margin:4px 0 13px}
-.nav{display:flex;gap:11px;align-items:center;padding:12px;border-radius:11px;color:#b7b4ca;cursor:pointer;margin:4px 0;font-size:13px;overflow-wrap:anywhere}
-.nav:hover,.nav.active{background:#a78bfa18;color:#e4d9ff}
-.nav.active{border:1px solid #a78bfa35}
-.nav .count{margin-left:auto;color:var(--muted);font-size:11px}
-.folder-nav{display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;color:inherit;text-align:left}
-.main{min-width:0}
-.toolbar{padding:18px;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:17px}
-input,select{background:#0d0d1bdc;border:1px solid var(--border);color:#f5f1ff;border-radius:11px;padding:12px;outline:none;min-width:0}
-input:focus,select:focus{border-color:#a78bfa}
-.search{flex:1;min-width:170px}
-select option{background:#171526}
-.upload{padding:22px;margin-bottom:18px}
-.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-h2{font:600 20px 'Space Grotesk',sans-serif;margin-bottom:7px}
-.muted{color:var(--muted);font-size:12px;line-height:1.7}
-.uploadrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
-.uploadrow input[type=file]{flex:1;max-width:100%}
-.filegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.file{padding:17px;min-width:0;transition:.25s}
-.file:hover{border-color:#a78bfa66;transform:translateY(-3px);box-shadow:0 12px 32px #8b5cf70d}
-.filetop{display:flex;justify-content:space-between;align-items:center}
-.fileicon{font-size:26px}
-.filetitle{font-weight:600;font-size:14px;margin:13px 0 7px;overflow-wrap:anywhere}
-.tag{display:inline-block;padding:5px 9px;border:1px solid #a78bfa30;background:#a78bfa12;color:#d7c8ff;border-radius:8px;font-size:10px;margin-top:12px}
-.fileactions{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
-.fileactions button{padding:8px 10px;font-size:11px}
-.empty{grid-column:1/-1;text-align:center;padding:50px 12px}
-.empty-icon{font-size:42px;margin-bottom:15px}
-.status{font-size:12px;color:#c4b5fd;margin-top:12px;min-height:18px;overflow-wrap:anywhere}
-.footer{text-align:center;color:#696984;font-size:11px;margin-top:32px}
-#loginView{max-width:430px;margin:10vh auto;padding:35px}
-#loginView h1{font-size:39px;letter-spacing:-1.5px}
-.login-input{width:100%;margin:12px 0 4px}
-.full{width:100%;margin-top:13px}
-.modal{position:fixed;inset:0;background:#05050bdc;backdrop-filter:blur(12px);z-index:10;display:grid;place-items:center;padding:20px}
-.modalbox{width:min(560px,100%);padding:25px;max-height:90vh;overflow:auto}
-.previewbox{width:min(1000px,100%);height:min(85vh,850px);padding:16px;display:flex;flex-direction:column;gap:12px}
-#previewContent{flex:1;min-height:0;display:grid;place-items:center;overflow:auto}
-#previewContent iframe{width:100%;height:100%;border:0;background:white}
-#previewContent img{max-width:100%;max-height:100%;object-fit:contain}
-.previewhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
-hr{border:0;border-top:1px solid var(--border);margin:18px 0}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{position:static}.folderlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.stats{gap:8px}.stat{padding:14px}.stat-num{font-size:24px}.hero{padding-top:40px}.top{top:6px}.shell{width:94%;padding-top:10px}}
-@media(max-width:480px){.filegrid{grid-template-columns:1fr}.top{padding:13px}.name{font-size:15px}.sub{font-size:9px}.avatar{width:40px;height:40px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat-label{font-size:10px}.stat-num{font-size:21px}.hero h1{font-size:40px}.toolbar{padding:12px}.upload{padding:17px}}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.glass{background:rgba(17,21,32,.86);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 45px #0003}
+button,.btn{border:1px solid var(--line);background:#1a2030;color:var(--text);padding:10px 14px;border-radius:11px;transition:.2s}
+button:hover,.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.primary{background:linear-gradient(135deg,#8c7bff,#5f69df);border:0;color:white;font-weight:700}
+.danger{color:var(--danger)}
+input,select{width:100%;background:#0b0e17;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 7px}
+#loginScreen{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(430px,100%);padding:30px}
+.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#9d8cff,#65d7d0);color:#090b11;font-weight:900;font-size:23px}
+.login-card h1{font-size:30px;margin:18px 0 6px;letter-spacing:-1px}
+.login-card p{line-height:1.6}
+.login-card button{width:100%;margin-top:18px}
+#app{max-width:1450px;margin:auto;padding:22px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 22px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand strong{letter-spacing:1.5px;font-size:15px}
+.brand small{display:block;color:var(--muted);margin-top:5px}
+.top-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.hero{padding:26px;margin-bottom:20px;background:linear-gradient(115deg,#17182c,#111520 65%,#102322)}
+.hero h1{font-size:clamp(25px,4vw,39px);letter-spacing:-1.5px;margin:0 0 10px}
+.hero p{margin:0;color:var(--muted);line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.stat{padding:19px}
+.stat .number{font-size:27px;font-weight:750;margin-top:8px}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+.sidebar{padding:17px;position:sticky;top:15px}
+.section-label{font-size:11px;letter-spacing:1.5px;color:var(--muted);margin:5px 0 12px}
+.folder-list{display:grid;gap:7px}
+.folder-btn{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:transparent;border-color:transparent}
+.folder-btn.active{background:#29233f;border-color:#514775}
+.folder-btn .count{margin-left:auto;color:var(--muted);font-size:12px}
+.sidebar-actions{display:grid;gap:8px;margin-top:15px}
+.main-panel{padding:20px;min-width:0}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:17px 0}
+.toolbar input{flex:1;min-width:160px}
+.toolbar select{width:auto;max-width:170px}
+.files-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:13px}
+.file-card{padding:15px;min-width:0;background:linear-gradient(145deg,#171c29,#10131d);border:1px solid var(--line);border-radius:15px;transition:.2s}
+.file-card:hover{border-color:#595079;transform:translateY(-2px)}
+.file-icon{height:85px;border-radius:11px;display:grid;place-items:center;background:#202337;font-size:36px;margin-bottom:13px;overflow:hidden}
+.file-icon img{width:100%;height:100%;object-fit:cover}
+.file-name{font-weight:650;overflow-wrap:anywhere;line-height:1.4}
+.file-meta{font-size:12px;color:var(--muted);margin-top:7px}
+.file-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.file-actions button{padding:7px 9px;font-size:12px}
+.empty{text-align:center;padding:55px 15px;color:var(--muted)}
+.empty .big{font-size:42px;margin-bottom:12px}
+.status{font-size:12px;color:var(--muted)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:13px 18px;background:#22283a;border:1px solid #3d4560;border-radius:12px;z-index:100;max-width:90%;box-shadow:0 10px 40px #0008}
+#modal{position:fixed;inset:0;background:#000b;z-index:50;display:grid;place-items:center;padding:15px}
+.modal-card{width:min(1000px,100%);height:min(85vh,800px);display:flex;flex-direction:column;padding:15px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px}
+#previewBody{flex:1;min-height:0;display:grid;place-items:center;background:#080a10;border-radius:12px;overflow:auto}
+#previewBody img{max-width:100%;max-height:100%;object-fit:contain}
+#previewBody iframe{width:100%;height:100%;border:0;background:white}
+#previewBody pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;color:#eee}
+#previewBody video{max-width:100%;max-height:100%}
+#previewBody audio{width:90%}
+.footer{text-align:center;padding:25px;color:var(--muted);font-size:12px}
+@media(max-width:800px){
+ #app{padding:12px}.layout{grid-template-columns:1fr}.sidebar{position:static}
+ .folder-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stats{gap:8px}.stat{padding:13px}.stat .number{font-size:22px}
+ .main-panel{padding:14px}.topbar{padding:14px}
+}
+@media(max-width:430px){.folder-list{grid-template-columns:1fr}.file-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.file-card{padding:10px}.file-icon{height:70px}.file-actions button{padding:7px}}
 </style>
 </head>
 <body>
-<div class="shell">
-<header class="top glass">
-  <div class="identity">
-    <div class="avatar">SA</div>
-    <div><div class="name">SOHEL AHMAD</div><div class="sub">PERSONAL DIGITAL SPACE</div></div>
-  </div>
-  <button id="lockBtn" class="btn ghost hidden">🔒 Lock</button>
-</header>
 
-<section id="loginView" class="glass">
-  <div class="avatar">SA</div>
-  <div class="eyebrow" style="margin-top:26px">PRIVATE ACCESS · 001</div>
-  <h1>Welcome to<br><span class="gradient">my vault.</span></h1>
-  <p class="muted">A personal space for all the things that matter.</p>
-  <form id="loginForm">
-    <input class="login-input" id="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
-    <button class="btn full" type="submit">Unlock workspace ↗</button>
-  </form>
-  <div id="loginStatus" class="status"></div>
-  <div class="muted" style="margin-top:20px">✦ PERSONAL · ORGANIZED · YOURS</div>
+<section id="loginScreen">
+  <div class="login-card glass">
+    <div class="logo">S</div>
+    <h1>Sohel Vault<span style="color:var(--accent)">.</span></h1>
+    <p class="muted">Your private space for important files. Sign in to access your personal vault.</p>
+    <form id="loginForm">
+      <label for="password">Master password</label>
+      <input id="password" type="password" placeholder="Enter your vault password" autocomplete="current-password" required>
+      <button class="primary" id="loginButton" type="submit">Unlock my vault ↗</button>
+    </form>
+    <p class="small muted" id="loginMessage"></p>
+    <p class="small muted">Private cloud storage · Personal access only</p>
+  </div>
 </section>
 
-<main id="workspace" class="hidden">
-  <section class="hero">
-    <div class="eyebrow">YOUR SPACE. YOUR RULES.</div>
-    <h1>Keep it <span class="gradient">together.</span></h1>
-    <p>Every document has a place. Keep your personal files organized in your own digital corner.</p>
+<div id="app" class="hidden">
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div><strong>SOHEL AHMAD</strong><small>PERSONAL DOCUMENT VAULT</small></div>
+    </div>
+    <div class="top-actions">
+      <span class="status" id="syncStatus">Connecting…</span>
+      <button id="uploadTop">＋ Upload</button>
+      <button id="logoutButton">Log out ↗</button>
+    </div>
+  </header>
+
+  <section class="hero glass">
+    <h1>Your files. Your space.</h1>
+    <p>A personal cloud locker for your documents, photos and important memories.<br>Synced to your account across supported devices.</p>
   </section>
 
   <section class="stats">
-    <div class="stat glass"><div class="stat-icon">▤</div><div class="stat-label">TOTAL FILES</div><div class="stat-num" id="totalFiles">0</div></div>
-    <div class="stat glass"><div class="stat-icon">▧</div><div class="stat-label">FOLDERS</div><div class="stat-num" id="totalFolders">0</div></div>
-    <div class="stat glass"><div class="stat-icon">◈</div><div class="stat-label">SPACE USED</div><div class="stat-num" id="totalSize">0 B</div></div>
+    <div class="stat glass"><div class="muted small">TOTAL FILES</div><div class="number" id="totalFiles">0</div></div>
+    <div class="stat glass"><div class="muted small">FOLDERS</div><div class="number" id="totalFolders">0</div></div>
+    <div class="stat glass"><div class="muted small">CLOUD STORAGE USED</div><div class="number" id="totalSize">0 B</div></div>
   </section>
 
   <div class="layout">
     <aside class="sidebar glass">
-      <div class="section-label">LIBRARY</div>
-      <div class="nav active" data-folder="all">◫ All documents <span class="count" id="allCount">0</span></div>
-      <div class="nav" data-folder="starred">☆ Starred <span class="count" id="starCount">0</span></div>
-      <hr>
-      <div class="heading"><div class="section-label">MY FOLDERS</div><button id="newFolderBtn" class="btn small">＋</button></div>
-      <div id="folderList" class="folderlist"></div>
-      <hr>
-      <button id="manageFolders" class="btn ghost" style="width:100%">⚙ Manage folders</button>
-      <p class="muted" style="margin:17px 0 0">Files stay in this browser on this device.</p>
+      <div class="section-label">YOUR LIBRARY</div>
+      <div class="folder-list" id="folderList"></div>
+      <div class="sidebar-actions">
+        <button id="newFolderButton">＋ New folder</button>
+        <button id="allFilesButton">▤ All documents</button>
+      </div>
+      <p class="small muted" style="line-height:1.6;margin-top:20px">Files are stored in your private Supabase bucket, not just in this browser.</p>
     </aside>
 
-    <section class="main">
-      <div class="toolbar glass">
-        <input class="search" id="search" type="search" placeholder="⌕ Search your files...">
-        <select id="sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="az">Name A–Z</option></select>
+    <main class="main-panel glass">
+      <div class="files-header">
+        <div><div class="section-label">YOUR COLLECTION</div><h2 id="currentTitle" style="margin:0">All documents</h2></div>
+        <button class="primary" id="uploadButton">＋ Upload files</button>
       </div>
-
-      <section class="upload glass">
-        <div class="heading"><h2>Drop into your space.</h2><span class="eyebrow">UPLOAD</span></div>
-        <p class="muted">Choose files and the folder where you want to keep them.</p>
-        <div class="uploadrow">
-          <input type="file" id="fileInput" multiple>
-          <select id="targetFolder" aria-label="Choose destination folder"></select>
-          <button id="uploadBtn" class="btn">Upload ↑</button>
-        </div>
-        <div id="uploadStatus" class="status"></div>
-      </section>
-
-      <div class="heading" style="margin:25px 2px 16px">
-        <div><div class="eyebrow">YOUR COLLECTION</div><h2 id="collectionTitle" style="margin-top:8px">All documents</h2></div>
-        <span class="muted" id="shownCount">0 items</span>
+      <div class="toolbar">
+        <input id="searchInput" type="search" placeholder="Search your documents…">
+        <select id="sortSelect" aria-label="Sort files">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="size">Largest first</option>
+        </select>
       </div>
-      <div id="fileGrid" class="filegrid"></div>
-    </section>
+      <div class="status" id="fileCountLabel"></div>
+      <div id="fileGrid" class="file-grid" style="margin-top:14px"></div>
+    </main>
   </div>
-</main>
-<footer class="footer">DESIGNED FOR SOHEL AHMAD · YOUR PERSONAL SPACE</footer>
+  <div class="footer">SOHEL VAULT · PRIVATE CLOUD DOCUMENT LOCKER</div>
 </div>
 
-<div id="folderModal" class="modal hidden">
-  <div class="modalbox glass">
-    <div class="heading"><h2 id="folderModalTitle">Create a folder</h2><button class="btn ghost" id="closeFolder">✕</button></div>
-    <label class="muted" for="folderName">FOLDER NAME</label>
-    <input id="folderName" style="width:100%;margin:10px 0" maxlength="40" placeholder="e.g. Personal Documents">
-    <label class="muted" for="folderEmoji">CHOOSE AN ICON</label>
-    <select id="folderEmoji" style="width:100%;margin:10px 0">
-      <option value="📁">📁 Folder</option><option value="🎓">🎓 Education</option>
-      <option value="🪪">🪪 Identity</option><option value="💼">💼 Work</option>
-      <option value="💳">💳 Finance</option><option value="🖼️">🖼️ Photos</option>
-      <option value="❤️">❤️ Personal</option><option value="✨">✨ Other</option>
-    </select>
-    <button class="btn full" id="saveFolder">Create folder</button>
-    <div id="folderStatus" class="status"></div>
-    <hr>
-    <h3 style="font-size:14px">Existing folders</h3>
-    <div id="manageList"></div>
-  </div>
-</div>
+<input id="fileInput" type="file" multiple class="hidden">
+<div id="toast" class="hidden"></div>
 
-<div id="previewModal" class="modal hidden">
-  <div class="modalbox glass previewbox">
-    <div class="previewhead"><strong id="previewTitle">Preview</strong><button class="btn ghost" id="closePreview">✕ Close</button></div>
-    <div id="previewContent"></div>
+<div id="modal" class="hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <strong id="previewTitle">Preview</strong>
+      <button id="closeModal">✕ Close</button>
+    </div>
+    <div id="previewBody"></div>
   </div>
 </div>
 
 <script>
-"use strict";
+/* =========================================================
+   REQUIRED CONFIGURATION — REPLACE THESE THREE VALUES
+   Use your project URL, publishable/anon key and Auth email.
+   NEVER put a service_role or secret key in this file.
+========================================================= */
+const SUPABASE_URL = https://claybfkjzudwwaqnbsod.supabase.co/rest/v1/;
+const SUPABASE_KEY = sb_publishable_vz60obg3LvU7Yc7u1UeObw_PTC6uBUp3;
+const MASTER_EMAIL = sohel.ahmad.personal@gmail.com;
 
-// CHANGE YOUR PASSWORD HERE:
-const MY_PASSWORD = "Sohel@123";
+const BUCKET = "documents";
+const { createClient } = window.supabase;
 
-const DB_NAME = "SohelVaultDB";
-const DB_VERSION = 1;
-let database;
-let folders = [
-  {id:"personal",name:"Personal",emoji:"❤️"},
-  {id:"education",name:"Education",emoji:"🎓"},
-  {id:"work",name:"Work",emoji:"💼"},
-  {id:"identity",name:"Identity",emoji:"🪪"}
-];
-let activeFolder = "all";
-let editingFolder = null;
-let previewUrl = null;
-let busy = false;
+const configReady =
+  SUPABASE_URL.startsWith("https://") &&
+  !SUPABASE_URL.includes("PASTE_") &&
+  SUPABASE_KEY &&
+  !SUPABASE_KEY.includes("PASTE_") &&
+  MASTER_EMAIL.includes("@") &&
+  !MASTER_EMAIL.includes("PASTE_");
+
+const db = configReady ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let currentUser = null;
+let folders = [];
+let documents = [];
+let currentFolder = null; // null means all documents
+let toastTimer = null;
+let activeObjectUrl = null;
+
 const $ = id => document.getElementById(id);
 
-function openDB(){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(DB_NAME,DB_VERSION);
-    req.onupgradeneeded=()=>{
-      const d=req.result;
-      if(!d.objectStoreNames.contains("files")){
-        const s=d.createObjectStore("files",{keyPath:"id"});
-        s.createIndex("folderId","folderId",{unique:false});
-      }
-    };
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[ch]));
 }
-function allFiles(){
-  return new Promise((resolve,reject)=>{
-    const tx=database.transaction("files","readonly");
-    const req=tx.objectStore("files").getAll();
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
+function formatBytes(bytes) {
+  if (!bytes) return "0 B";
+  const units = ["B","KB","MB","GB","TB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + " " + units[i];
 }
-function saveFile(file){
-  return new Promise((resolve,reject)=>{
-    const tx=database.transaction("files","readwrite");
-    tx.objectStore("files").put(file);
-    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
-  });
+function prettyDate(date) {
+  return new Date(date).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
 }
-function removeFile(id){
-  return new Promise((resolve,reject)=>{
-    const tx=database.transaction("files","readwrite");
-    tx.objectStore("files").delete(id);
-    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
-  });
+function showToast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.add("hidden"), 3500);
 }
-function safe(s){
-  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-function bytes(n){
-  if(n<1024)return n+" B";
-  if(n<1048576)return (n/1024).toFixed(1)+" KB";
-  if(n<1073741824)return (n/1048576).toFixed(1)+" MB";
-  return (n/1073741824).toFixed(2)+" GB";
-}
-function date(s){return new Date(s).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});}
-function msg(id,text,error=false){$(id).textContent=text;$(id).style.color=error?"#ff9db6":"#c4b5fd";}
-function setLocked(locked){
-  $("loginView").classList.toggle("hidden",!locked);
-  $("workspace").classList.toggle("hidden",locked);
-  $("lockBtn").classList.toggle("hidden",locked);
-  if(locked)$("password").value="";
-}
-function getFolder(id){return folders.find(f=>f.id===id);}
-function folderName(id){return getFolder(id)?.name||"Other";}
-
-async function render(){
-  const files=await allFiles();
-  $("totalFiles").textContent=files.length;
-  $("totalFolders").textContent=folders.length;
-  $("totalSize").textContent=bytes(files.reduce((n,f)=>n+f.size,0));
-  $("allCount").textContent=files.length;
-  $("starCount").textContent=files.filter(f=>f.starred).length;
-
-  $("folderList").innerHTML=folders.map(f=>`
-    <div class="nav ${activeFolder===f.id?"active":""}" data-folder="${safe(f.id)}">
-      <span>${f.emoji}</span><span style="overflow-wrap:anywhere">${safe(f.name)}</span>
-      <span class="count">${files.filter(x=>x.folderId===f.id).length}</span>
-    </div>`).join("");
-
-  $("targetFolder").innerHTML=folders.map(f=>
-    `<option value="${safe(f.id)}">${f.emoji} ${safe(f.name)}</option>`).join("");
-
-  if(folders.length===0){
-    $("folderList").innerHTML='<p class="muted">Create your first folder with +</p>';
-    $("targetFolder").innerHTML='<option value="">No folders yet</option>';
-  }
-  if(activeFolder!=="all"&&activeFolder!=="starred"&&!getFolder(activeFolder))activeFolder="all";
-
-  const query=$("search").value.trim().toLowerCase();
-  let shown=files.filter(f=>{
-    const match=(!query||f.name.toLowerCase().includes(query));
-    if(activeFolder==="all")return match;
-    if(activeFolder==="starred")return match&&f.starred;
-    return match&&f.folderId===activeFolder;
-  });
-  const sort=$("sort").value;
-  if(sort==="new")shown.sort((a,b)=>b.createdAt-a.createdAt);
-  if(sort==="old")shown.sort((a,b)=>a.createdAt-b.createdAt);
-  if(sort==="az")shown.sort((a,b)=>a.name.localeCompare(b.name));
-
-  $("collectionTitle").textContent=activeFolder==="all"?"All documents":
-    activeFolder==="starred"?"Starred":((getFolder(activeFolder)?.emoji||"📁")+" "+folderName(activeFolder));
-  $("shownCount").textContent=shown.length+" item"+(shown.length===1?"":"s");
-
-  $("fileGrid").innerHTML=shown.length?shown.map(f=>`
-    <article class="file glass">
-      <div class="filetop"><span class="fileicon">${iconFor(f)}</span>
-      <button class="btn ghost small" data-action="star" data-id="${f.id}">${f.starred?"★":"☆"}</button></div>
-      <div class="filetitle">${safe(f.name)}</div>
-      <div class="muted">${bytes(f.size)} · ${date(f.createdAt)}</div>
-      <span class="tag">${safe(folderName(f.folderId))}</span>
-      <div class="fileactions">
-        <button class="btn ghost" data-action="preview" data-id="${f.id}">Preview</button>
-        <button class="btn ghost" data-action="download" data-id="${f.id}">↓ Save</button>
-        <button class="btn red" data-action="delete" data-id="${f.id}">Delete</button>
-        <select data-action="move" data-id="${f.id}" aria-label="Move ${safe(f.name)}" style="max-width:100%;width:100%;margin-top:3px">
-          <option value="">Move to folder…</option>
-          ${folders.filter(x=>x.id!==f.folderId).map(x=>`<option value="${safe(x.id)}">${x.emoji} ${safe(x.name)}</option>`).join("")}
-        </select>
-      </div>
-    </article>`).join(''):`<div class="empty"><div class="empty-icon">✧</div><h3>Nothing here yet.</h3><p class="muted">Upload a document or create a folder to get started.</p></div>`;
-
-  renderManageList();
-}
-function iconFor(f){
-  if(f.type.startsWith("image/"))return "🖼️";
-  if(f.type==="application/pdf")return "📕";
-  if(f.type.includes("word")||f.name.endsWith(".docx"))return "📘";
-  if(f.type.includes("sheet")||f.name.endsWith(".xlsx"))return "📗";
+function setStatus(message) { $("syncStatus").textContent = message; }
+function fileIcon(file) {
+  const name = file.name.toLowerCase();
+  const type = file.mime_type || "";
+  if (type.startsWith("image/")) return "🖼️";
+  if (type.startsWith("video/")) return "🎬";
+  if (type.startsWith("audio/")) return "🎵";
+  if (type.includes("pdf") || name.endsWith(".pdf")) return "📕";
+  if (name.endsWith(".doc") || name.endsWith(".docx")) return "📝";
+  if (name.endsWith(".xls") || name.endsWith(".xlsx") || name.endsWith(".csv")) return "📊";
+  if (name.endsWith(".ppt") || name.endsWith(".pptx")) return "📽️";
+  if (name.endsWith(".zip") || name.endsWith(".rar") || name.endsWith(".7z")) return "🗜️";
+  if (name.endsWith(".txt")) return "📃";
   return "📄";
 }
-function renderManageList(){
-  $("manageList").innerHTML=folders.length?folders.map(f=>`
-    <div class="heading" style="padding:9px 0;border-bottom:1px solid var(--border)">
-      <span>${f.emoji} ${safe(f.name)}</span>
-      <button class="btn red small" data-folder-delete="${safe(f.id)}">Delete</button>
-    </div>`).join(""):'<p class="muted">No folders yet.</p>';
+function safeFilename(name) {
+  return name.replace(/[\/\\]/g, "_").replace(/[\u0000-\u001f]/g, "_");
 }
-function openFolderModal(edit=null){
-  editingFolder=edit;
-  $("folderModalTitle").textContent=edit?"Rename folder":"Create a folder";
-  $("saveFolder").textContent=edit?"Save changes":"Create folder";
-  $("folderName").value=edit?getFolder(edit)?.name||"":"";
-  $("folderEmoji").value=edit?getFolder(edit)?.emoji||"📁":"📁";
-  msg("folderStatus","");
-  $("folderModal").classList.remove("hidden");
-  renderManageList();
-  setTimeout(()=>$("folderName").focus(),100);
+function getCurrentFolderName() {
+  return folders.find(f => f.id === currentFolder)?.name || "All documents";
 }
-function closeFolderModal(){$("folderModal").classList.add("hidden");editingFolder=null;}
-async function saveFolder(){
-  const name=$("folderName").value.trim();
-  if(!name)return msg("folderStatus","Enter a folder name.",true);
-  if(folders.some(f=>f.name.toLowerCase()===name.toLowerCase()&&f.id!==editingFolder))
-    return msg("folderStatus","A folder with this name already exists.",true);
-  if(editingFolder){
-    const f=getFolder(editingFolder);
-    if(f){f.name=name;f.emoji=$("folderEmoji").value;}
-  }else{
-    folders.push({id:crypto.randomUUID(),name,emoji:$("folderEmoji").value});
+function visibleDocuments() {
+  const query = $("searchInput").value.trim().toLowerCase();
+  const sort = $("sortSelect").value;
+  let list = documents.filter(d =>
+    (currentFolder === null || d.folder_id === currentFolder) &&
+    d.name.toLowerCase().includes(query)
+  );
+  if (sort === "newest") list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  if (sort === "oldest") list.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  if (sort === "name") list.sort((a,b) => a.name.localeCompare(b.name));
+  if (sort === "size") list.sort((a,b) => Number(b.size_bytes) - Number(a.size_bytes));
+  return list;
+}
+
+/* ---------- AUTH ---------- */
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!configReady) {
+    $("loginMessage").textContent = "Setup needed: add your Supabase URL, publishable key and Auth email in the code.";
+    return;
   }
-  try{localStorage.setItem("sohelVaultFolders",JSON.stringify(folders));}
-  catch(e){msg("folderStatus","Could not save folder settings.",true);return;}
-  $("folderName").value="";
-  await render();
-  msg("folderStatus","Saved successfully.");
-  editingFolder=null;
-  setTimeout(closeFolderModal,450);
+  const password = $("password").value;
+  const button = $("loginButton");
+  button.disabled = true;
+  button.textContent = "Verifying…";
+  $("loginMessage").textContent = "";
+  try {
+    const { data, error } = await db.auth.signInWithPassword({
+      email: MASTER_EMAIL,
+      password
+    });
+    if (error) throw error;
+    currentUser = data.user;
+    $("password").value = "";
+    await enterVault();
+  } catch (error) {
+    $("loginMessage").textContent = "Login failed. Check your password and Supabase Auth user.";
+    console.error(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Unlock my vault ↗";
+  }
+});
+
+$("logoutButton").addEventListener("click", async () => {
+  if (!db) return;
+  const { error } = await db.auth.signOut();
+  if (error) return showToast("Couldn't log out: " + error.message);
+  currentUser = null;
+  folders = [];
+  documents = [];
+  closePreview();
+  $("app").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden");
+  $("loginMessage").textContent = "You have logged out.";
+});
+
+async function enterVault() {
+  $("loginScreen").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  setStatus("Syncing cloud…");
+  await loadAll();
 }
-async function deleteFolder(id){
-  const f=getFolder(id);if(!f)return;
-  if(!confirm(`Delete folder "${f.name}"? Its files will be moved to the first remaining folder, or kept as unassigned if none remain.`))return;
-  const files=await allFiles();
-  const remaining=folders.filter(x=>x.id!==id);
-  for(const file of files){
-    if(file.folderId===id){
-      file.folderId=remaining[0]?.id||"";
-      await saveFile(file);
+
+if (!configReady) {
+  $("loginMessage").textContent = "First, add your Supabase project details in the configuration section of index.html.";
+} else {
+  db.auth.getSession().then(async ({ data, error }) => {
+    if (error) {
+      console.error(error);
+      return;
     }
-  }
-  folders=remaining;
-  localStorage.setItem("sohelVaultFolders",JSON.stringify(folders));
-  if(activeFolder===id)activeFolder="all";
-  await render();
+    if (data.session) {
+      currentUser = data.session.user;
+      await enterVault();
+    }
+  });
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+      currentUser = null;
+      $("app").classList.add("hidden");
+      $("loginScreen").classList.remove("hidden");
+    }
+  });
 }
-async function upload(){
-  if(busy)return;
-  const selected=Array.from($("fileInput").files||[]);
-  if(!selected.length)return msg("uploadStatus","Choose at least one file.",true);
-  const folder=$("targetFolder").value;
-  if(!folder||!getFolder(folder))return msg("uploadStatus","Create a folder first.",true);
-  busy=true;$("uploadBtn").disabled=true;
-  try{
-    for(let i=0;i<selected.length;i++){
-      const file=selected[i];
-      msg("uploadStatus",`Saving ${i+1}/${selected.length}: ${file.name}`);
-      await saveFile({
-        id:crypto.randomUUID(),name:file.name,type:file.type||"application/octet-stream",
-        size:file.size,blob:file,folderId:folder,starred:false,createdAt:Date.now()
+
+/* ---------- CLOUD DATA ---------- */
+async function loadAll() {
+  if (!currentUser) return;
+  setStatus("Syncing cloud…");
+  try {
+    const [folderResult, documentResult] = await Promise.all([
+      db.from("vault_folders").select("*").order("created_at", {ascending:true}),
+      db.from("vault_documents").select("*").order("created_at", {ascending:false})
+    ]);
+    if (folderResult.error) throw folderResult.error;
+    if (documentResult.error) throw documentResult.error;
+    folders = folderResult.data || [];
+    documents = documentResult.data || [];
+
+    // If the selected folder was deleted, return to all documents.
+    if (currentFolder && !folders.some(f => f.id === currentFolder)) currentFolder = null;
+    renderAll();
+    setStatus("☁ Cloud synced");
+  } catch (error) {
+    console.error(error);
+    setStatus("Sync failed");
+    showToast("Couldn't load your vault. Check your Supabase setup.");
+  }
+}
+
+function renderAll() {
+  renderFolders();
+  renderDocuments();
+  $("totalFiles").textContent = documents.length;
+  $("totalFolders").textContent = folders.length;
+  $("totalSize").textContent = formatBytes(documents.reduce((sum,d) => sum + Number(d.size_bytes || 0),0));
+  $("currentTitle").textContent = getCurrentFolderName();
+}
+
+function renderFolders() {
+  const allCount = documents.length;
+  const folderCount = id => documents.filter(d => d.folder_id === id).length;
+  let html = `<button class="folder-btn ${currentFolder === null ? "active" : ""}" data-folder="">
+    <span>▤</span><span>All documents</span><span class="count">${allCount}</span></button>`;
+  html += folders.map(f => `<button class="folder-btn ${currentFolder === f.id ? "active" : ""}" data-folder="${escapeHTML(f.id)}">
+    <span>${escapeHTML(f.emoji || "📁")}</span><span style="overflow-wrap:anywhere">${escapeHTML(f.name)}</span><span class="count">${folderCount(f.id)}</span></button>`).join("");
+  $("folderList").innerHTML = html;
+  $("folderList").querySelectorAll("[data-folder]").forEach(button => {
+    button.addEventListener("click", () => {
+      currentFolder = button.dataset.folder || null;
+      renderAll();
+    });
+    // Right-click a custom folder to offer deletion.
+    if (button.dataset.folder) {
+      button.addEventListener("contextmenu", async event => {
+        event.preventDefault();
+        await deleteFolder(button.dataset.folder);
       });
     }
-    $("fileInput").value="";
-    msg("uploadStatus","All files saved to this browser ✓");
-    await render();
-  }catch(e){msg("uploadStatus","Could not save files. Browser storage may be full.",true);}
-  finally{busy=false;$("uploadBtn").disabled=false;}
-}
-async function getFile(id){return (await allFiles()).find(f=>f.id===id);}
-function download(f){
-  const url=URL.createObjectURL(f.blob);
-  const a=document.createElement("a");a.href=url;a.download=f.name;
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-}
-async function preview(f){
-  if(previewUrl)URL.revokeObjectURL(previewUrl);
-  previewUrl=URL.createObjectURL(f.blob);
-  $("previewTitle").textContent=f.name;
-  const box=$("previewContent");box.innerHTML="";
-  if(f.type==="application/pdf"){
-    const iframe=document.createElement("iframe");iframe.src=previewUrl;iframe.title=f.name;box.appendChild(iframe);
-  }else if(f.type.startsWith("image/")){
-    const img=document.createElement("img");img.src=previewUrl;img.alt=f.name;box.appendChild(img);
-  }else{
-    const p=document.createElement("p");p.className="muted";
-    p.textContent="Preview is available for images and PDFs. Download this file to open it.";
-    box.appendChild(p);
-  }
-  $("previewModal").classList.remove("hidden");
-}
-function closePreview(){
-  $("previewModal").classList.add("hidden");$("previewContent").innerHTML="";
-  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;
+  });
 }
 
-$("loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  if($("password").value===MY_PASSWORD){
-    try{
-      database=database||await openDB();
-      setLocked(false);msg("loginStatus","");
-      await render();
-    }catch(err){msg("loginStatus","Browser storage is unavailable.",true);}
-  }else{
-    msg("loginStatus","Incorrect password. Try again.",true);
+function renderDocuments() {
+  const list = visibleDocuments();
+  $("fileCountLabel").textContent = `${list.length} document${list.length === 1 ? "" : "s"}`;
+  if (!list.length) {
+    $("fileGrid").innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="big">📂</div><strong>No documents here yet</strong>
+      <p>Upload a file or choose another folder.</p>
+    </div>`;
+    return;
   }
-});
-$("lockBtn").addEventListener("click",()=>{
-  closePreview();setLocked(true);activeFolder="all";
-});
-$("newFolderBtn").addEventListener("click",()=>openFolderModal());
-$("manageFolders").addEventListener("click",()=>openFolderModal());
-$("closeFolder").addEventListener("click",closeFolderModal);
-$("saveFolder").addEventListener("click",saveFolder);
-$("uploadBtn").addEventListener("click",upload);
-$("search").addEventListener("input",render);
-$("sort").addEventListener("change",render);
-$("closePreview").addEventListener("click",closePreview);
-$("previewModal").addEventListener("click",e=>{if(e.target===$("previewModal"))closePreview();});
-$("folderModal").addEventListener("click",e=>{if(e.target===$("folderModal"))closeFolderModal();});
+  $("fileGrid").innerHTML = list.map(d => `
+    <article class="file-card">
+      <div class="file-icon">${d.mime_type?.startsWith("image/") ? "" : escapeHTML(fileIcon(d))}
+        ${d.mime_type?.startsWith("image/") ? `<span>🖼️</span>` : ""}
+      </div>
+      <div class="file-name" title="${escapeHTML(d.name)}">${escapeHTML(d.name)}</div>
+      <div class="file-meta">${formatBytes(Number(d.size_bytes || 0))} · ${prettyDate(d.created_at)}</div>
+      <div class="file-meta">${escapeHTML(folders.find(f => f.id === d.folder_id)?.name || "Unsorted")}</div>
+      <div class="file-actions">
+        <button data-action="preview" data-id="${escapeHTML(d.id)}">Preview</button>
+        <button data-action="download" data-id="${escapeHTML(d.id)}">Download</button>
+        <button class="danger" data-action="delete" data-id="${escapeHTML(d.id)}">Delete</button>
+      </div>
+    </article>`).join("");
 
-document.addEventListener("click",async e=>{
-  const nav=e.target.closest("[data-folder]");
-  if(nav){activeFolder=nav.dataset.folder;await render();return;}
-  const delFolder=e.target.closest("[data-folder-delete]");
-  if(delFolder){await deleteFolder(delFolder.dataset.folderDelete);return;}
-  const btn=e.target.closest("button[data-action]");
-  if(!btn)return;
-  const f=await getFile(btn.dataset.id);if(!f)return;
-  if(btn.dataset.action==="preview")await preview(f);
-  if(btn.dataset.action==="download")download(f);
-  if(btn.dataset.action==="delete"){
-    if(confirm(`Permanently delete "${f.name}"?`)){await removeFile(f.id);await render();}
+  $("fileGrid").querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const doc = documents.find(d => d.id === button.dataset.id);
+      if (!doc) return;
+      button.disabled = true;
+      try {
+        if (button.dataset.action === "preview") await previewDocument(doc);
+        if (button.dataset.action === "download") await downloadDocument(doc);
+        if (button.dataset.action === "delete") await deleteDocument(doc);
+      } catch (error) {
+        console.error(error);
+        showToast("Action failed: " + (error.message || "Please try again."));
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+}
+
+$("searchInput").addEventListener("input", renderDocuments);
+$("sortSelect").addEventListener("change", renderDocuments);
+$("allFilesButton").addEventListener("click", () => { currentFolder = null; renderAll(); });
+
+/* ---------- FOLDERS ---------- */
+$("newFolderButton").addEventListener("click", createFolder);
+
+async function createFolder() {
+  if (!currentUser) return;
+  const name = prompt("Enter a folder name:");
+  if (!name || !name.trim()) return;
+  const emoji = prompt("Choose an emoji for this folder:", "📁") || "📁";
+  try {
+    const { error } = await db.from("vault_folders").insert({
+      name: name.trim().slice(0,100),
+      emoji: emoji.trim().slice(0,8) || "📁",
+      user_id: currentUser.id
+    });
+    if (error) throw error;
+    await loadAll();
+    showToast("Folder created ☁");
+  } catch (error) {
+    console.error(error);
+    showToast("Folder creation failed: " + error.message);
   }
-  if(btn.dataset.action==="star"){
-    f.starred=!f.starred;await saveFile(f);await render();
+}
+
+async function deleteFolder(id) {
+  const folder = folders.find(f => f.id === id);
+  if (!folder) return;
+  if (!confirm(`Delete folder "${folder.name}"? Its documents will remain in your vault, moved to Unsorted.`)) return;
+  try {
+    const { error } = await db.from("vault_folders").delete().eq("id", id);
+    if (error) throw error;
+    if (currentFolder === id) currentFolder = null;
+    await loadAll();
+    showToast("Folder deleted");
+  } catch (error) {
+    console.error(error);
+    showToast("Couldn't delete folder: " + error.message);
   }
-});
-document.addEventListener("change",async e=>{
-  const s=e.target.closest('select[data-action="move"]');
-  if(!s||!s.value)return;
-  const f=await getFile(s.dataset.id);if(!f)return;
-  f.folderId=s.value;await saveFile(f);await render();
+}
+
+/* ---------- UPLOAD ---------- */
+$("uploadButton").addEventListener("click", () => $("fileInput").click());
+$("uploadTop").addEventListener("click", () => $("fileInput").click());
+
+$("fileInput").addEventListener("change", async event => {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!files.length || !currentUser) return;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    setStatus(`Uploading ${i + 1}/${files.length}…`);
+    showToast(`Uploading: ${file.name}`);
+    let storagePath = null;
+
+    try {
+      // A user-specific folder in the private bucket.
+      storagePath = `${currentUser.id}/${crypto.randomUUID()}-${safeFilename(file.name)}`;
+      const { error: uploadError } = await db.storage.from(BUCKET).upload(storagePath, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+
+      const { error: metadataError } = await db.from("vault_documents").insert({
+        name: file.name,
+        storage_path: storagePath,
+        folder_id: currentFolder,
+        mime_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+        user_id: currentUser.id
+      });
+
+      if (metadataError) {
+        await db.storage.from(BUCKET).remove([storagePath]);
+        throw metadataError;
+      }
+    } catch (error) {
+      console.error(error);
+      showToast(`Couldn't upload ${file.name}: ${error.message}`);
+    }
+  }
+
+  await loadAll();
+  showToast("Upload process finished");
 });
 
-try{
-  const saved=JSON.parse(localStorage.getItem("sohelVaultFolders")||"null");
-  if(Array.isArray(saved))folders=saved.filter(f=>f&&typeof f.id==="string"&&typeof f.name==="string");
-}catch(e){}
+/* ---------- PRIVATE DOWNLOAD / PREVIEW ---------- */
+async function getFileBlob(doc) {
+  const { data, error } = await db.storage.from(BUCKET).download(doc.storage_path);
+  if (error) throw error;
+  return data;
+}
+
+function closePreview() {
+  $("modal").classList.add("hidden");
+  $("previewBody").innerHTML = "";
+  if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
+  activeObjectUrl = null;
+}
+$("closeModal").addEventListener("click", closePreview);
+$("modal").addEventListener("click", event => {
+  if (event.target === $("modal")) closePreview();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closePreview();
+});
+
+async function previewDocument(doc) {
+  const blob = await getFileBlob(doc);
+  if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
+  activeObjectUrl = URL.createObjectURL(blob);
+  $("previewTitle").textContent = doc.name;
+  const type = doc.mime_type || "";
+  const url = activeObjectUrl;
+  const body = $("previewBody");
+
+  if (type.startsWith("image/")) {
+    body.innerHTML = `<img alt="${escapeHTML(doc.name)}">`;
+    body.querySelector("img").src = url;
+  } else if (type === "application/pdf" || doc.name.toLowerCase().endsWith(".pdf")) {
+    body.innerHTML = `<iframe title="PDF preview"></iframe>`;
+    body.querySelector("iframe").src = url;
+  } else if (type.startsWith("video/")) {
+    body.innerHTML = `<video controls></video>`;
+    body.querySelector("video").src = url;
+  } else if (type.startsWith("audio/")) {
+    body.innerHTML = `<audio controls></audio>`;
+    body.querySelector("audio").src = url;
+  } else if (type.startsWith("text/") || /\.(txt|json|csv|md|log)$/i.test(doc.name)) {
+    const text = await blob.text();
+    body.innerHTML = `<pre></pre>`;
+    body.querySelector("pre").textContent = text;
+  } else {
+    body.innerHTML = `<div class="empty"><div class="big">${escapeHTML(fileIcon(doc))}</div>
+      <strong>Preview isn't available for this file type.</strong>
+      <p>Download the file to open it.</p></div>`;
+  }
+  $("modal").classList.remove("hidden");
+}
+
+async function downloadDocument(doc) {
+  const blob = await getFileBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = doc.name;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+async function deleteDocument(doc) {
+  if (!confirm(`Permanently delete "${doc.name}" from your vault?`)) return;
+  try {
+    const { error: storageError } = await db.storage.from(BUCKET).remove([doc.storage_path]);
+    if (storageError) throw storageError;
+
+    const { error: rowError } = await db.from("vault_documents").delete().eq("id", doc.id);
+    if (rowError) throw rowError;
+
+    await loadAll();
+    showToast("Document deleted");
+  } catch (error) {
+    console.error(error);
+    showToast("Couldn't delete document: " + error.message);
+  }
+}
 </script>
 </body>
 </html>
+33
