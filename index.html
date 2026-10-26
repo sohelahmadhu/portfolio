@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sohel Vault 🔐</title>
+<style>
+body {
+  margin: 0;
+  background: #090b10;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+#lock {
+  margin: 100px auto;
+  padding: 30px;
+  max-width: 350px;
+  background: #151925;
+  border-radius: 20px;
+}
+input, button {
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #34394a;
+}
+input { background: #090b10; color: white; }
+button { background: #a78bfa; cursor: pointer; }
+#vault { display: none; padding: 25px; }
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <h1>🔐 Sohel Vault</h1>
+  <p>Enter your password</p>
+  <input id="pass" type="password" placeholder="Password">
+  <br>
+  <button onclick="unlock()">Unlock Vault</button>
+  <p id="msg"></p>
+</div>
+
+<div id="vault">
+  <h1>Welcome to Sohel Vault</h1>
+  <p>Your personal document space</p>
+  <input type="file" id="files" multiple>
+  <div id="list"></div>
+  <br>
+  <button onclick="lockAgain()">Lock Vault</button>
+</div>
+
+<script>
+const MY_PASSWORD = "Sohel@123";
+
+function unlock() {
+  if (document.getElementById("pass").value === MY_PASSWORD) {
+    document.getElementById("lock").style.display = "none";
+    document.getElementById("vault").style.display = "block";
+  } else {
+    document.getElementById("msg").textContent = "Wrong password!";
+  }
+}
+
+function lockAgain() {
+  document.getElementById("vault").style.display = "none";
+  document.getElementById("lock").style.display = "block";
+  document.getElementById("pass").value = "";
+}
+
+document.getElementById("files").addEventListener("change", function() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  Array.from(this.files).forEach(file => {
+    const url = URL.createObjectURL(file);
+    const row = document.createElement("p");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.name;
+    link.textContent = "Download " + file.name;
+    link.style.color = "#a78bfa";
+    row.appendChild(link);
+    list.appendChild(row);
+  });
+});
+</script>
+</body>
+</html>
